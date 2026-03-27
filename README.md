@@ -1,0 +1,1 @@
+# rhel-image-mode-lab
