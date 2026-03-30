@@ -1,5 +1,5 @@
 # Common base image used by all scenarios in this repository
-FROM registry.redhat.io/rhel9/rhel-bootc:9.6
+FROM registry.redhat.io/rhel9/rhel-bootc:9.7
 
 LABEL name="rhel-image-mode-lab-base"
 LABEL maintainer="Ekko Chang <ekko.chang@redhat.com>"

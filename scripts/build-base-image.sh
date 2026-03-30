@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./common.sh
+source "${SCRIPT_DIR}/common.sh"
+
 IMAGE_NAME="${IMAGE_NAME:-localhost/rhel-image-mode-lab-base}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 CONTAINERFILE="${CONTAINERFILE:-./Containerfile}"
 BUILD_CONTEXT="${BUILD_CONTEXT:-.}"
-
-log() {
-  echo "[INFO] $*"
-}
-
-err() {
-  echo "[ERROR] $*" >&2
-}
 
 usage() {
   cat <<EOF
@@ -45,20 +41,6 @@ Examples:
   $(basename "$0") --file ./Containerfile --context .
 
 EOF
-}
-
-check_cmd() {
-  command -v "$1" >/dev/null 2>&1 || {
-    err "Required command not found: $1"
-    exit 1
-  }
-}
-
-check_file() {
-  [[ -f "$1" ]] || {
-    err "File not found: $1"
-    exit 1
-  }
 }
 
 parse_args() {
@@ -98,7 +80,7 @@ main() {
   parse_args "$@"
 
   check_cmd podman
-  check_file "$CONTAINERFILE"
+  require_file "$CONTAINERFILE"
 
   log "Building base image from: $CONTAINERFILE"
   log "Build context: $BUILD_CONTEXT"
