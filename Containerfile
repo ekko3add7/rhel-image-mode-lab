@@ -17,10 +17,7 @@ RUN dnf -y install \
 # -----------------------------------------------------------------------------
     
 # Banner
-RUN printf '%s\n' \
-    'RHEL Image Mode Lab Base Image' \
-    'This system is built from the root Containerfile of rhel-image-mode-lab.' \
-    > /etc/motd
+COPY files/motd /etc/motd
 
 # Timezone
 RUN ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime && \
@@ -45,6 +42,9 @@ RUN mkdir -p /etc/systemd/journald.conf.d && \
       'Storage=persistent' \
       'Compress=yes' \
       > /etc/systemd/journald.conf.d/persistent.conf
+
+# Podman
+COPY files/099-ekko-registry.conf /etc/containers/registries.conf.d/099-ekko-registry.conf
 
 # -----------------------------------------------------------------------------
 # Services settings
