@@ -67,14 +67,6 @@ Specify a custom source image:
   --type qcow2
 ```
 
-Specify a custom output directory:
-
-```bash
-./scripts/build-disk-image.sh \
-  --type vmdk \
-  --output-dir ./artifacts
-```
-
 Show help:
 ```bash
 ./scripts/build-disk-image.sh --help

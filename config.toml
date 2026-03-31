@@ -1,0 +1,63 @@
+# config.toml
+
+[[customizations.user]]
+name = "echang"
+password = "redhat"
+key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIImTMrNmJlHuxs9zczH0ub3vfgzNZhm5LASBF0fOX3Tx test@test.ekko.com"
+groups = ["wheel"]
+
+
+# Allowed mountpoints​
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html-single/using_image_mode_for_rhel_to_build_deploy_and_manage_operating_systems/index#benefits-of-disk-customizations-in-RHEL-image-mode_customizing-disk-images-of-rhel-image-mode-with-advanced-partitioning
+
+[[customizations.disk.partitions]]
+type = "plain"
+mountpoint = "/boot/efi"
+fs_type = "vfat"
+minsize = "200 MiB"
+label = "EFI"
+
+[[customizations.disk.partitions]]
+type = "plain"
+mountpoint = "/boot"
+fs_type = "xfs"
+minsize = "1 GiB"
+label = "boot"
+
+[[customizations.disk.partitions]]
+type = "plain"
+label = "data"
+mountpoint = "/data"
+fs_type = "ext4"
+minsize = "1 GiB"
+
+[[customizations.disk.partitions]]
+type = "lvm"
+name = "rhel"
+minsize = "30 GiB"
+
+[[customizations.disk.partitions.logical_volumes]]
+name = "rootlv"
+mountpoint = "/"
+label = "root"
+fs_type = "ext4"
+minsize = "5 GiB"
+
+[[customizations.disk.partitions.logical_volumes]]
+name = "var_log"
+mountpoint = "/var/log"
+fs_type = "xfs"
+minsize = "5 GiB"
+label = "var_log"
+
+[[customizations.disk.partitions.logical_volumes]]
+name = "var_log_audit"
+mountpoint = "/var/log/audit"
+fs_type = "xfs"
+minsize = "1 GiB"
+label = "var_log_ad"
+
+[[customizations.disk.partitions.logical_volumes]]
+name = "swaplv"
+fs_type = "swap"
+minsize = "1 GiB"

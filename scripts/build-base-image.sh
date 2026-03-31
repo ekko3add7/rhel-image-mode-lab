@@ -86,9 +86,10 @@ main() {
   log "Build context: $BUILD_CONTEXT"
   log "Target image: ${IMAGE_NAME}:${IMAGE_TAG}"
 
+  # podman build -f ./Containerfile -t localhost/rhel-image-mode-lab-base:latest .
   podman build \
-    --file "$CONTAINERFILE" \
-    --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
+    -f "$CONTAINERFILE" \
+    -t "${IMAGE_NAME}:${IMAGE_TAG}" \
     "$BUILD_CONTEXT"
 
   log "Build completed successfully."

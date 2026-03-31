@@ -9,13 +9,13 @@ LABEL description="Common base image used by all scenarios in the rhel-image-mod
 RUN dnf -y install \
             chrony sos sysstat tcpdump iproute net-tools bash-completion \
             pesign gdb kexec-tools rsync wget curl strace ipa-client \
-            open-vm-tools qemu-guest-agent \
+            open-vm-tools qemu-guest-agent sudo \
     && dnf clean all
-
 
 # -----------------------------------------------------------------------------
 # Basic system settings
 # -----------------------------------------------------------------------------
+    
 # Banner
 RUN printf '%s\n' \
     'RHEL Image Mode Lab Base Image' \
@@ -49,4 +49,6 @@ RUN mkdir -p /etc/systemd/journald.conf.d && \
 # -----------------------------------------------------------------------------
 # Services settings
 # -----------------------------------------------------------------------------
+RUN mkdir -p /data
+
 RUN systemctl enable chronyd

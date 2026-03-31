@@ -9,9 +9,11 @@ IMAGE_NAME="${IMAGE_NAME:-localhost/rhel-image-mode-lab-base}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 SOURCE_IMAGE="${SOURCE_IMAGE:-${IMAGE_NAME}:${IMAGE_TAG}}"
 
-OUTPUT_DIR="${OUTPUT_DIR:-./output}"
 IMAGE_TYPE="${IMAGE_TYPE:-vmdk}"
 BOOTC_BUILDER_IMAGE="${BOOTC_BUILDER_IMAGE:-registry.redhat.io/rhel9/bootc-image-builder:latest}"
+
+CONFIG_FILE="./config.toml"
+OUTPUT_DIR="./output"
 
 usage() {
   cat <<EOF
@@ -23,31 +25,22 @@ Build a bootable disk image from a locally available bootc image.
 Options:
   -s, --source-image IMAGE    Source bootc image to convert
                               Default: ${SOURCE_IMAGE}
-  -o, --output-dir PATH       Output directory for generated artifacts
-                              Default: ${OUTPUT_DIR}
   -t, --type TYPE             Output image type: qcow2 | vmdk
                               Default: ${IMAGE_TYPE}
   -b, --builder-image IMAGE   bootc-image-builder container image
                               Default: ${BOOTC_BUILDER_IMAGE}
   -h, --help                  Show this help message
 
-Environment variables:
-  IMAGE_NAME                  Base image name
-  IMAGE_TAG                   Base image tag
-  SOURCE_IMAGE                Full source image reference
-  OUTPUT_DIR                  Output directory
-  IMAGE_TYPE                  Output image type (qcow2 or vmdk)
-  BOOTC_BUILDER_IMAGE         bootc-image-builder image reference
-
 Examples:
   $(basename "$0")
   $(basename "$0") --type qcow2
   $(basename "$0") --type vmdk
   $(basename "$0") --source-image localhost/rhel-image-mode-lab-base:latest --type qcow2
-  $(basename "$0") --output-dir ./artifacts --type vmdk
+  $(basename "$0") --builder-image registry.redhat.io/rhel9/bootc-image-builder:latest --type vmdk
 
 Notes:
   - The source image must already exist locally.
+  - Output artifacts are always written to: ${OUTPUT_DIR}
   - You must be able to pull from registry.redhat.io.
   - This script uses a privileged podman container.
   - qcow2 is typically used for KVM/libvirt.
@@ -77,15 +70,17 @@ check_image_type() {
   esac
 }
 
+check_config_file() {
+  if [[ -n "$CONFIG_FILE" ]]; then
+    require_file "$CONFIG_FILE"
+  fi
+}
+
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       -s|--source-image)
         SOURCE_IMAGE="$2"
-        shift 2
-        ;;
-      -o|--output-dir)
-        OUTPUT_DIR="$2"
         shift 2
         ;;
       -t|--type)
@@ -117,6 +112,7 @@ main() {
   check_image_type
   ensure_dir "$OUTPUT_DIR"
   check_source_image
+  check_config_file
   check_registry_login registry.redhat.io
 
   log "Source image: $SOURCE_IMAGE"
@@ -130,6 +126,7 @@ main() {
     --pull=newer \
     --security-opt label=type:unconfined_t \
     -v /var/lib/containers/storage:/var/lib/containers/storage \
+    -v ./config.toml:/config.toml:ro \
     -v "$(realpath "$OUTPUT_DIR"):/output" \
     "$BOOTC_BUILDER_IMAGE" \
     --type "$IMAGE_TYPE" \
