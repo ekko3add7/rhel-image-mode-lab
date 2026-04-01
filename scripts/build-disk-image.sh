@@ -120,6 +120,19 @@ main() {
   log "Output directory: $OUTPUT_DIR"
   log "Requested output type: $IMAGE_TYPE"
 
+  # for lab purposes
+  echo
+  cat <<EOF
+Running command: 
+  podman run --rm --privileged --pull=newer --security-opt label=type:unconfined_t 
+    -v /var/lib/containers/storage:/var/lib/containers/storage 
+    -v $(realpath ./config.toml):/config.toml:ro 
+    -v $(realpath "$OUTPUT_DIR"):/output 
+    $BOOTC_BUILDER_IMAGE 
+    --type $IMAGE_TYPE $SOURCE_IMAGE
+EOF
+  echo
+
   podman run \
     --rm \
     --privileged \
