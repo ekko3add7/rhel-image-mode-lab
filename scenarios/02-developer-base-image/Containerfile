@@ -1,0 +1,19 @@
+# Golden image from platform team
+FROM registry.ekko.com:5000/rhel-image-mode-lab-base:rhel96
+
+LABEL maintainer="Developer Team"
+
+RUN dnf install -y nginx && \
+    dnf clean all
+
+RUN mkdir -p /var/log/nginx \
+             /var/lib/nginx/tmp/client_body \
+             /var/lib/nginx/tmp/proxy \
+             /var/lib/nginx/tmp/fastcgi \
+             /var/lib/nginx/tmp/uwsgi \
+             /var/lib/nginx/tmp/scgi
+
+
+COPY files/index.html /usr/share/nginx/html/index.html
+
+RUN systemctl enable nginx
