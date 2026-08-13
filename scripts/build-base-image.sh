@@ -7,8 +7,8 @@ source "${SCRIPT_DIR}/common.sh"
 
 IMAGE_NAME="${IMAGE_NAME:-localhost/rhel-image-mode-lab-base}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
-CONTAINERFILE="${CONTAINERFILE:-./Containerfile}"
-BUILD_CONTEXT="${BUILD_CONTEXT:-.}"
+CONTAINERFILE="${CONTAINERFILE:-./scenarios/00-base-image/Containerfile}"
+BUILD_CONTEXT="${BUILD_CONTEXT:-./scenarios/00-base-image}"
 
 usage() {
   cat <<EOF

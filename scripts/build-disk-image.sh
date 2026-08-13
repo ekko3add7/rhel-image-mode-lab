@@ -12,7 +12,7 @@ SOURCE_IMAGE="${SOURCE_IMAGE:-${IMAGE_NAME}:${IMAGE_TAG}}"
 IMAGE_TYPE="${IMAGE_TYPE:-vmdk}"
 BOOTC_BUILDER_IMAGE="${BOOTC_BUILDER_IMAGE:-registry.redhat.io/rhel9/bootc-image-builder:latest}"
 
-CONFIG_FILE="./config.toml"
+CONFIG_FILE="./scenarios/00-base-image/config.toml"
 OUTPUT_DIR="./output"
 
 usage() {
@@ -126,7 +126,7 @@ main() {
 Running command: 
   podman run --rm --privileged --pull=newer --security-opt label=type:unconfined_t 
     -v /var/lib/containers/storage:/var/lib/containers/storage 
-    -v $(realpath ./config.toml):/config.toml:ro 
+    -v $(realpath "$CONFIG_FILE"):/config.toml:ro
     -v $(realpath "$OUTPUT_DIR"):/output 
     $BOOTC_BUILDER_IMAGE 
     --type $IMAGE_TYPE $SOURCE_IMAGE
@@ -139,7 +139,7 @@ EOF
     --pull=newer \
     --security-opt label=type:unconfined_t \
     -v /var/lib/containers/storage:/var/lib/containers/storage \
-    -v ./config.toml:/config.toml:ro \
+    -v "$CONFIG_FILE":/config.toml:ro \
     -v "$(realpath "$OUTPUT_DIR"):/output" \
     "$BOOTC_BUILDER_IMAGE" \
     --type "$IMAGE_TYPE" \
