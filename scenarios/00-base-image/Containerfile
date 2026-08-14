@@ -8,7 +8,6 @@ LABEL description="Common base image used by all scenarios in the rhel-image-mod
 
 RUN dnf -y install \
             chrony sos sysstat tcpdump iproute net-tools bash-completion \
-            pesign gdb kexec-tools rsync wget curl strace ipa-client \
             open-vm-tools qemu-guest-agent sudo \
     && dnf clean all
 
@@ -19,13 +18,16 @@ RUN dnf -y install \
 # Banner
 COPY files/motd /etc/motd
 
+# Podman Image Source Registry
+COPY files/099-lab-registry.conf /etc/containers/registries.conf.d/099-lab-registry.conf
+
 # Timezone
 RUN ln -sf /usr/share/zoneinfo/Asia/Taipei /etc/localtime && \
     echo 'Asia/Taipei' > /etc/timezone
 
 # Chrony
 RUN printf '%s\n' \
-    'server 10.102.254.34 iburst' \
+    'server time.google.com iburst' \
     'driftfile /var/lib/chrony/drift' \
     'makestep 1.0 3' \
     'rtcsync' \
@@ -43,12 +45,9 @@ RUN mkdir -p /etc/systemd/journald.conf.d && \
       'Compress=yes' \
       > /etc/systemd/journald.conf.d/persistent.conf
 
-# Podman
-COPY files/099-ekko-registry.conf /etc/containers/registries.conf.d/099-ekko-registry.conf
 
 # -----------------------------------------------------------------------------
 # Services settings
 # -----------------------------------------------------------------------------
-RUN mkdir -p /data
-
-RUN systemctl enable chronyd
+RUN systemctl enable chronyd.service
+RUN systemctl enable auditd.service

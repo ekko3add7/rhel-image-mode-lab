@@ -40,7 +40,7 @@ minsize = "30 GiB"
 name = "rootlv"
 mountpoint = "/"
 label = "root"
-fs_type = "ext4"
+fs_type = "xfs"
 minsize = "5 GiB"
 
 [[customizations.disk.partitions.logical_volumes]]

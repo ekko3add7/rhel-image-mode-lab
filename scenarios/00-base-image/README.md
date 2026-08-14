@@ -2,42 +2,71 @@
 
 ## Overview
 
-This scenario builds the common base RHEL bootc image used by all other scenarios. It defines the standard system packages, timezone, NTP, journald settings, and container registry configuration.
+This scenario builds a **Standard Operating Environment (SOE)** bootc image using RHEL Image Mode.
 
-## Directory Structure
+An SOE image defines the organization's baseline — required packages, security hardening, compliance settings, time synchronization, and logging policies. Once built and pushed to a container registry, this image serves as the **golden image** that all other scenarios and teams can extend.
 
-```text
-scenarios/00-base-image
-├── Containerfile
-├── config.toml
-├── README.md
-└── files
-    ├── 099-ekko-registry.conf
-    └── motd
-```
+See `Containerfile` and `files/` for the specific configuration applied to the SOE image.
 
-## Workflow
-
-### Step 1 - Build the base image
+## Build the SOE image
 
 ```bash
-./scripts/build-base-image.sh
+cd scenarios/00-base-image
+
+podman build -f Containerfile -t localhost/rhel-image-mode-lab-base:latest .
 ```
 
-### Step 2 - Build a bootable disk image
+Alternatively, use the helper script `./scripts/build-base-image.sh`.
 
-Build QCOW2 for KVM:
+## Push to a registry
+
 ```bash
-./scripts/build-disk-image.sh --type qcow2
+podman push localhost/rhel-image-mode-lab-base:latest <registry>/rhel-image-mode-lab-base:<tag>
+```
+
+## Convert to a bootable disk image (optional)
+
+Convert the SOE image into a VM disk image using `bootc-image-builder`.
+
+### config.toml
+
+`config.toml` is the configuration file consumed by `bootc-image-builder` to customize the disk image. It defines:
+
+- **User accounts** — initial user, password, SSH key, and group membership.
+- **Disk partitioning** — the partition layout applied when generating the disk image.
+
+Current partition layout:
+
+| Partition | Type | Filesystem | Size | Mount Point |
+|---|---|---|---|---|
+| EFI | plain | vfat | 200 MiB | `/boot/efi` |
+| boot | plain | xfs | 1 GiB | `/boot` |
+| data | plain | ext4 | 1 GiB | `/data` |
+| rootlv | LVM (`rhel`) | xfs | 5 GiB | `/` |
+| var_log | LVM (`rhel`) | xfs | 5 GiB | `/var/log` |
+| var_log_audit | LVM (`rhel`) | xfs | 1 GiB | `/var/log/audit` |
+| swaplv | LVM (`rhel`) | swap | 1 GiB | — |
+
+Build QCOW2 for KVM / libvirt:
+```bash
+podman run --rm --privileged --pull=newer \
+  --security-opt label=type:unconfined_t \
+  -v /var/lib/containers/storage:/var/lib/containers/storage \
+  -v ./scenarios/00-base-image/config.toml:/config.toml:ro \
+  -v ./output:/output \
+  registry.redhat.io/rhel9/bootc-image-builder:latest \
+  --type qcow2 localhost/rhel-image-mode-lab-base:latest
 ```
 
 Build VMDK for VMware:
 ```bash
-./scripts/build-disk-image.sh --type vmdk
+podman run --rm --privileged --pull=newer \
+  --security-opt label=type:unconfined_t \
+  -v /var/lib/containers/storage:/var/lib/containers/storage \
+  -v ./scenarios/00-base-image/config.toml:/config.toml:ro \
+  -v ./output:/output \
+  registry.redhat.io/rhel9/bootc-image-builder:latest \
+  --type vmdk localhost/rhel-image-mode-lab-base:latest
 ```
 
-### Step 3 - Push the base image to a registry
-
-```bash
-podman push localhost/rhel-image-mode-lab-base:latest registry.example.com/rhel-image-mode-lab-base:latest
-```
+Alternatively, use the helper script `./scripts/build-disk-image.sh --type qcow2|vmdk`.
